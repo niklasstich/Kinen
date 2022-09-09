@@ -40,4 +40,21 @@ public partial class Foobarbaz
         return TestHelper.Verify(source);
     }
 
+    [Test]
+    public Task NonPartialClass_ShouldGenerateDiagnosticError()
+    {
+        const string source = @"
+using Kinen.Generator;
+
+namespace Kinen.Test;
+
+[Memento]
+public class Foobarbaz
+{
+    public string Bar { get; set; }
+}
+";
+        return TestHelper.Verify(source);
+    }
+
 }

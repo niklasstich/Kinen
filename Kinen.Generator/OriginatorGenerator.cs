@@ -51,6 +51,11 @@ namespace Kinen.Generator
                 {
                     continue;
                 }
+                if(!classDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword))
+                {
+                    context.ReportDiagnostic(DiagnosticHelper.CreateNotPartialDiagnostic(classDeclaration));
+                    continue;
+                }
 
                 BuildIOriginatorImplementation(compilation, context, classDeclaration);
             }
@@ -75,7 +80,7 @@ namespace Kinen.Generator
                     var attributeContainingTypeSymbol = attributeSymbol.Symbol?.ContainingType;
                     var fullName = attributeContainingTypeSymbol?.ToDisplayString();
                     if (fullName != MementoAttributeHelper.AttributeFullName) continue; 
-                    return classDeclarationSyntax.Modifiers.Any(SyntaxKind.PartialKeyword) ? classDeclarationSyntax : null;
+                    return classDeclarationSyntax;
                 }
             }
 
