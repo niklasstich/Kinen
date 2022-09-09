@@ -19,8 +19,8 @@ namespace Kinen.Generator
             {
                 ctx.AddSource($"{MementoAttributeHelper.AttributeName}.g.cs",
                     SourceText.From(MementoAttributeHelper.AttributeCode, Encoding.UTF8));
-                ctx.AddSource($"{MementoExcludeAttributeHelper.AttributeName}.g.cs",
-                    SourceText.From(MementoExcludeAttributeHelper.AttributeCode, Encoding.UTF8));
+                ctx.AddSource($"{MementoSkipAttributeHelper.AttributeName}.g.cs",
+                    SourceText.From(MementoSkipAttributeHelper.AttributeCode, Encoding.UTF8));
                 ctx.AddSource($"{IOriginatorHelper.InterfaceName}.g.cs",
                     SourceText.From(IOriginatorHelper.InterfaceCode, Encoding.UTF8));
                 ctx.AddSource($"{IMementoHelper.InterfaceName}.g.cs",
@@ -56,8 +56,11 @@ namespace Kinen.Generator
             }
         }
 
-        private static bool IsTargetForGeneration(SyntaxNode node, CancellationToken _) =>
-            node is ClassDeclarationSyntax { AttributeLists.Count: > 0 };
+        private static bool IsTargetForGeneration(SyntaxNode node, CancellationToken _)
+        {
+            var retval = node is ClassDeclarationSyntax { AttributeLists.Count: > 0 };
+            return retval;
+        }
 
         private static ClassDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context, CancellationToken cancellationToken)
         {
@@ -99,8 +102,11 @@ namespace Kinen.Generator
                 var attributes = symbol.GetAttributes();
                 if (attributes.IsEmpty) return true;
                 return !attributes.Any(attribute =>
-                    attribute.AttributeClass?.ToDisplayString() == MementoExcludeAttributeHelper.AttributeFullName);
+                    attribute.AttributeClass?.ToDisplayString() == MementoSkipAttributeHelper.AttributeFullName);
             }).ToImmutableList();
+
+            if (relevantMembers.IsEmpty)
+                return;
 
             var propertiesImpl =
                 string.Join(Environment.NewLine,
@@ -115,7 +121,8 @@ namespace Kinen.Generator
                         .OfType<IFieldSymbol>()
                         .Select(TemplatingHelper.GenerateFieldString)
                     );
-
+            
+            
             var constructorImpl =
                 string.Join(Environment.NewLine, relevantMembers.Select(TemplatingHelper.GenerateConstructorMemberSet));
 

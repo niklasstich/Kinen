@@ -1,6 +1,6 @@
 namespace Kinen.Generator;
 
-public class IOriginatorHelper
+public static class IOriginatorHelper
 {
     public static string InterfaceName => "IOriginator";
     public static string InterfaceNamespace => "Kinen.Generator";

@@ -1,8 +1,8 @@
 namespace Kinen.Generator;
 
-public class MementoExcludeAttributeHelper
+public static class MementoSkipAttributeHelper
 {
-    public static string AttributeName => "MementoExclude";
+    public static string AttributeName => "MementoSkip";
     public static string Namespace => "Kinen.Generator";
     public static string AttributeFullName => $"{Namespace}.{AttributeName}";
     public static string AttributeCode => @$"namespace {Namespace}

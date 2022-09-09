@@ -5,7 +5,7 @@ namespace Kinen.Consumer;
 [Memento]
 public partial class Foo
 {
-    [MementoExclude]
+    [MementoSkip]
     private string _name;
 
     public string Name
