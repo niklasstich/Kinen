@@ -36,7 +36,7 @@ public partial class {parentClassName} : {IOriginatorHelper.InterfaceName}
         if (!string.IsNullOrWhiteSpace(propertiesImpl))
             propertiesImpl = $"{DoubleIndent}//Properties\n{propertiesImpl}";
         if (!string.IsNullOrWhiteSpace(fieldsImpl))
-            fieldsImpl = $"{DoubleIndent}//Fields\n{propertiesImpl}";
+            fieldsImpl = $"{DoubleIndent}//Fields\n{fieldsImpl}";
         return $@"{Indent}private class {mementoClassName} : {IMementoHelper.InterfaceName} 
     {{
         public {mementoClassName}({parentClassName} originator)
