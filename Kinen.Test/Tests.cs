@@ -117,4 +117,28 @@ public class Foobarbaz
         return TestHelper.Verify(source);
     }
 
+    [Test]
+    public Task EmptyInput_ShouldGenerateNoFile()
+    {
+        const string source = "";
+
+        return TestHelper.Verify(source);
+    }
+    
+    [Test]
+    public Task ClassWithoutMementoAttribute_ShouldGenerateNoFile()
+    {
+        const string source = @"
+using Kinen.Generator;
+
+namespace Kinen.Test;
+
+public partial class Foobarbaz
+{
+}
+";
+        
+        return TestHelper.Verify(source);
+    }
+
 }
