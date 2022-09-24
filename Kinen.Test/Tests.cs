@@ -141,4 +141,55 @@ public partial class Foobarbaz
         return TestHelper.Verify(source);
     }
 
+    [Test]
+    public Task ClassWithVariousVisibilities_ShouldGenerateCorrectly()
+    {
+        const string source = @"
+using Kinen.Generator;
+
+namespace Kinen.Test;
+
+[Memento]
+public partial class Foobarbaz
+{
+    public string PublicProperty { get; set; }
+    internal string _internalField;
+    protected string ProtectedProperty { get; set; }
+    private string _privateField;
+}
+";
+        
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task NestedClassInNestedNamespace_ShouldGenerateCorrectly()
+    {
+        const string source = @"
+using Kinen.Generator;
+
+namespace Kinen.Test
+{
+    namespace Nested
+    {
+        namespace NestedAgain
+        {
+            public partial class Foo
+            {
+                [Memento]
+                private partial class Bar 
+                {
+                    public string PublicProperty { get; set; }
+                }
+            }
+        }
+    }
+}
+";
+        
+        return TestHelper.Verify(source);
+    }
+    
+    
+
 }
