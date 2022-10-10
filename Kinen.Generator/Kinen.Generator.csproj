@@ -28,7 +28,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AvantiPoint.CodeGenHelpers" Version="1.6.12">
+      <PackageReference Include="AvantiPoint.CodeGenHelpers" Version="1.6.20">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>

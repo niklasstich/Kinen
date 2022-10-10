@@ -197,7 +197,7 @@ namespace Kinen.Generator
             if (typeSymbol.ContainingType != null)
             {
                 var (root, parent) = GetClassBuilder(typeSymbol.ContainingType, compilation);
-                var child = parent.AddNestedClass(typeSymbol.Name, typeSymbol.DeclaredAccessibility);
+                var child = parent.AddNestedClass(typeSymbol.Name, true, typeSymbol.DeclaredAccessibility);
                 return (root, child);
             }
             else

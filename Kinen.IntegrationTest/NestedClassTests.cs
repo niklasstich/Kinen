@@ -8,7 +8,6 @@ namespace Kinen.IntegrationTest;
 [TestFixture]
 public class NestedClassTests
 {
-    /*
     [Test]
     public void NestedClass_RestoreMemento_RestoresCorrectly()
     {
@@ -34,7 +33,6 @@ public class NestedClassTests
         var systemUnderTest = new ParentClass.NestedClass();
 
         Assert.That(() => systemUnderTest.RestoreMemento(fakeMemento),
-            Throws.ArgumentException.With.Message.EqualTo("memento is not BasicClassMemento"));
+            Throws.ArgumentException.With.Message.EqualTo("memento is not NestedClassMemento"));
     }
-    */
 }
