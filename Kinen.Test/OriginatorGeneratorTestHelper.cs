@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Kinen.Test;
 
 
-public static class TestHelper
+public static class OriginatorGeneratorTestHelper
 {
     public static Task Verify(String source)
     {

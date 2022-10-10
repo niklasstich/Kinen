@@ -1,0 +1,16 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: KINEN0002,
+      Title: Memento non-partial parent class,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (9,25)-(9,28),
+      Description: ,
+      HelpLink: ,
+      MessageFormat: Parent classes of classes marked with Memento must be partial to generate the Memento code.,
+      Message: Parent classes of classes marked with Memento must be partial to generate the Memento code.,
+      Category: Memento
+    }
+  ]
+}

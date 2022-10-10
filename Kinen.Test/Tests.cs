@@ -20,7 +20,7 @@ public partial class Foobarbaz
 {
 }
 ";
-        return TestHelper.Verify(source);
+        return OriginatorGeneratorTestHelper.Verify(source);
     }
 
     [Test]
@@ -37,7 +37,7 @@ public partial class Foobarbaz
     public string Bar { get; set; }
 }
 ";
-        return TestHelper.Verify(source);
+        return OriginatorGeneratorTestHelper.Verify(source);
     }
 
     [Test]
@@ -54,7 +54,7 @@ public partial class Foobarbaz
     public string _bar;
 }
 ";
-        return TestHelper.Verify(source);
+        return OriginatorGeneratorTestHelper.Verify(source);
         
     }
     
@@ -73,7 +73,7 @@ public partial class Foobarbaz
     public string _bar;
 }
 ";
-        return TestHelper.Verify(source);
+        return OriginatorGeneratorTestHelper.Verify(source);
         
     }
 
@@ -96,7 +96,7 @@ public partial class Foobarbaz
     public string _bar;
 }
 ";
-        return TestHelper.Verify(source);
+        return OriginatorGeneratorTestHelper.Verify(source);
         
     }
 
@@ -114,7 +114,7 @@ public class Foobarbaz
     public string Bar { get; set; }
 }
 ";
-        return TestHelper.Verify(source);
+        return OriginatorGeneratorTestHelper.Verify(source);
     }
 
     [Test]
@@ -122,7 +122,7 @@ public class Foobarbaz
     {
         const string source = "";
 
-        return TestHelper.Verify(source);
+        return OriginatorGeneratorTestHelper.Verify(source);
     }
     
     [Test]
@@ -138,7 +138,7 @@ public partial class Foobarbaz
 }
 ";
         
-        return TestHelper.Verify(source);
+        return OriginatorGeneratorTestHelper.Verify(source);
     }
 
     [Test]
@@ -159,7 +159,7 @@ public partial class Foobarbaz
 }
 ";
         
-        return TestHelper.Verify(source);
+        return OriginatorGeneratorTestHelper.Verify(source);
     }
 
     [Test]
@@ -187,9 +187,35 @@ namespace Kinen.Test
 }
 ";
         
-        return TestHelper.Verify(source);
+        return OriginatorGeneratorTestHelper.Verify(source);
     }
-    
-    
+
+    [Test]
+    public Task NestedClassInNestedNamespace_ParentNotPartial_ShouldGenerateDiagnosticError()
+    {
+        const string source = @"
+using Kinen.Generator;
+
+namespace Kinen.Test
+{
+    namespace Nested
+    {
+        namespace NestedAgain
+        {
+            public class Foo
+            {
+                [Memento]
+                private partial class Bar 
+                {
+                    public string PublicProperty { get; set; }
+                }
+            }
+        }
+    }
+}
+";
+        
+        return OriginatorGeneratorTestHelper.Verify(source);
+    }
 
 }

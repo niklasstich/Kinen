@@ -67,8 +67,7 @@ namespace Kinen.Generator
                 {
                     if (!parentToken.Modifiers.Any(SyntaxKind.PartialKeyword))
                     {
-                        throw new NotImplementedException("New diagnostic about containing class not being partial");
-                        context.ReportDiagnostic(DiagnosticHelper.CreateNotPartialDiagnostic(parentToken));
+                        context.ReportDiagnostic(DiagnosticHelper.CreateParentNotPartialDiagnostic(parentToken));
                         continueOuter = true;
                         break;
                     }
