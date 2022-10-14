@@ -21,7 +21,8 @@ namespace Kinen.Test
 
         public void RestoreMemento(IMemento memento)
         {
-            if(memento is not FoobarbazMemento concreteMemento) throw new ArgumentException("memento is not FoobarbazMemento");
+            if (memento is not FoobarbazMemento concreteMemento)
+                throw new ArgumentException("memento is not FoobarbazMemento");
             this.Bar = concreteMemento.Bar;
         }
 

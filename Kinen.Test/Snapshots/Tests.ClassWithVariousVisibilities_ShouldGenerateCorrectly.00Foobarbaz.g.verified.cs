@@ -16,25 +16,26 @@ namespace Kinen.Test
     {
         public IMemento CreateMemento()
         {
-            return new FoobarbazMemento(PublicProperty, ProtectedProperty, _internalField, _privateField);
+            return new FoobarbazMemento(PublicProperty, _internalField, ProtectedProperty, _privateField);
         }
 
         public void RestoreMemento(IMemento memento)
         {
-            if(memento is not FoobarbazMemento concreteMemento) throw new ArgumentException("memento is not FoobarbazMemento");
+            if (memento is not FoobarbazMemento concreteMemento)
+                throw new ArgumentException("memento is not FoobarbazMemento");
             this.PublicProperty = concreteMemento.PublicProperty;
-            this.ProtectedProperty = concreteMemento.ProtectedProperty;
             this._internalField = concreteMemento._internalField;
+            this.ProtectedProperty = concreteMemento.ProtectedProperty;
             this._privateField = concreteMemento._privateField;
         }
 
         private class FoobarbazMemento : IMemento
         {
-            public FoobarbazMemento(string PublicProperty, string ProtectedProperty, string _internalField, string _privateField)
+            public FoobarbazMemento(string PublicProperty, string _internalField, string ProtectedProperty, string _privateField)
             {
                 this.PublicProperty = PublicProperty;
-                this.ProtectedProperty = ProtectedProperty;
                 this._internalField = _internalField;
+                this.ProtectedProperty = ProtectedProperty;
                 this._privateField = _privateField;
             }
 

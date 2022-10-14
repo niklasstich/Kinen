@@ -23,7 +23,8 @@ namespace Kinen.Test.Nested.NestedAgain
 
             public void RestoreMemento(IMemento memento)
             {
-                if(memento is not BarMemento concreteMemento) throw new ArgumentException("memento is not BarMemento");
+                if (memento is not BarMemento concreteMemento)
+                    throw new ArgumentException("memento is not BarMemento");
                 this.PublicProperty = concreteMemento.PublicProperty;
             }
 

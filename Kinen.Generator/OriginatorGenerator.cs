@@ -111,81 +111,86 @@ public class OriginatorGenerator : IIncrementalGenerator
     {
             
         var className = classDeclaration.Identifier.Text;
-            
-        var semanticModel = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
-        var typeSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
+        var mementoClassName = $"{className}Memento";
+
+        var typeSymbol = compilation.GetSemanticModel(classDeclaration.SyntaxTree).GetDeclaredSymbol(classDeclaration);
         if (typeSymbol == null)
             throw new Exception("type wasn't INamedTypeSymbol");
 
-        var (root, parentBuilder) = GetClassBuilder(typeSymbol, compilation);
-        parentBuilder.AddNamespaceImport(MementoAttributeHelper.Namespace);
-        parentBuilder.AddInterface("IOriginator");
+        var (root, originatorBuilder) = GetClassBuilder(typeSymbol, compilation);
+        originatorBuilder
+            .AddNamespaceImport(MementoAttributeHelper.Namespace)
+            .AddInterface("IOriginator");
 
-        var parentCreateMementoMethod = parentBuilder.AddMethod("CreateMemento", Accessibility.Public);
-        parentCreateMementoMethod.WithReturnType("IMemento");
-        var parentCreateMementoConstructorArguments = "";
-            
-        var parentRestoreMethod = parentBuilder.AddMethod("RestoreMemento", Accessibility.Public);
-        parentRestoreMethod.WithReturnType("void");
-        parentRestoreMethod.AddParameter("IMemento", "memento");
-        var parentRestoreMethodActions = new List<Action<ICodeWriter>> 
-        {
-            w =>
-                w.AppendLine(
-                    $"if(memento is not {className}Memento concreteMemento) throw new ArgumentException(\"memento is not {className}Memento\");")
-        };
-        var nestedBuilder = parentBuilder.AddNestedClass($"{className}Memento", Accessibility.Private);
-        nestedBuilder.AddInterface("IMemento");
-        var nestedConstructorBuilder = nestedBuilder
-            .AddConstructor(Accessibility.Public);
+        var originatorCreateMementoMethodBuilder = GetCreateMementoMethodBuilder(originatorBuilder);
+        var originatorRestoreMementoMethodBuilder = GetRestoreMementoMethodBuilder(originatorBuilder);
+        var mementoClassBuilder = GetMementoClassBuilder(originatorBuilder, mementoClassName);
+        var mementoConstructorBuilder = GetMementoConstructorBuilder(mementoClassBuilder);
 
         //filter members
-        var relevantMembers = typeSymbol.GetMembers().Where(symbol =>
-        {
-            if (symbol is not (IPropertySymbol or IFieldSymbol)) return false;
-            if (symbol.IsImplicitlyDeclared) return false;
-                
-            var attributes = symbol.GetAttributes();
-            if (attributes.IsEmpty) return true;
-            return !attributes.Any(attribute =>
-                attribute.AttributeClass?.ToDisplayString() == MementoSkipAttributeHelper.AttributeFullName);
-        }).ToImmutableList();
-
+        var relevantMembers = GetRelevantMembersOfType(typeSymbol);
         if (relevantMembers.IsEmpty)
             return;
 
-        var propertySymbols = relevantMembers.OfType<IPropertySymbol>();
-        var fieldSymbols = relevantMembers.OfType<IFieldSymbol>();
+        //Memento constructor
+        relevantMembers.BuildMementoConstructorParameters(mementoConstructorBuilder);
+        mementoConstructorBuilder.WithBody(relevantMembers.BuildNestedConstructorBody);
 
-        var nestedConstructorActions = new List<Action<ICodeWriter>>();
-            
-        foreach (var property in propertySymbols )
-        {
-            parentCreateMementoConstructorArguments = HandlePropertyOrField(nestedBuilder,
-                property.Type.ToDisplayString(), property.Name, nestedConstructorBuilder, nestedConstructorActions,
-                parentRestoreMethodActions, parentCreateMementoConstructorArguments);
-        }
-            
-        foreach (var field in fieldSymbols)
-        {
-            parentCreateMementoConstructorArguments = HandlePropertyOrField(nestedBuilder,
-                field.Type.ToDisplayString(), field.Name, nestedConstructorBuilder, nestedConstructorActions,
-                parentRestoreMethodActions, parentCreateMementoConstructorArguments);
-        }
-            
-        var constructorImpl =
-            nestedConstructorActions.Aggregate<Action<ICodeWriter>, Action<ICodeWriter>>(null!,
-                (current, a) => current + a);
-        nestedConstructorBuilder.WithBody(constructorImpl);
-        var parentRestoreImpl =
-            parentRestoreMethodActions.Aggregate<Action<ICodeWriter>, Action<ICodeWriter>>(null!,
-                (current, a) => current + a);
-        parentRestoreMethod.WithBody(parentRestoreImpl);
-        Action<ICodeWriter> parentCreateMementoImpl = w =>
-            w.AppendLine($"return new {className}Memento({parentCreateMementoConstructorArguments});");
-        parentCreateMementoMethod.WithBody(parentCreateMementoImpl);
-            
+        //Memento properties
+        relevantMembers.AddAutoPropertiesToMemento(mementoClassBuilder);
+
+        //Originator restore memento method
+        originatorRestoreMementoMethodBuilder.WithBody(cw => relevantMembers.BuildRestoreMethodBody(cw, mementoClassName));
+
+        //Originator create memento method
+        originatorCreateMementoMethodBuilder.WithBody(cw => relevantMembers.BuildCreateMementoMethodBody(cw, mementoClassName));
+
         context.AddSource($"{root.Name}.g.cs", root.Build());
+    }
+
+    private static ConstructorBuilder GetMementoConstructorBuilder(ClassBuilder mementoClassBuilder)
+    {
+        return mementoClassBuilder
+            .AddConstructor(Accessibility.Public);
+    }
+
+    private static ClassBuilder GetMementoClassBuilder(ClassBuilder originatorBuilder, string mementoClassName)
+    {
+        return originatorBuilder
+            .AddNestedClass(mementoClassName, Accessibility.Private)
+            .AddInterface("IMemento");
+    }
+
+    private static MethodBuilder GetRestoreMementoMethodBuilder(ClassBuilder originatorBuilder)
+    {
+        return originatorBuilder
+            .AddMethod("RestoreMemento", Accessibility.Public)
+            .WithReturnType("void")
+            .AddParameter("IMemento", "memento");
+    }
+
+    private static MethodBuilder GetCreateMementoMethodBuilder(ClassBuilder originatorBuilder)
+    {
+        return originatorBuilder
+            .AddMethod("CreateMemento", Accessibility.Public)
+            .WithReturnType("IMemento");
+    }
+
+    private static ImmutableList<ISymbol> GetRelevantMembersOfType(INamespaceOrTypeSymbol typeSymbol)
+    {
+        return typeSymbol.GetMembers()
+            .Where(symbol => !symbol.IsImplicitlyDeclared)
+            .Where(symbol => symbol is IPropertySymbol or IFieldSymbol)
+            .Where(HasMementoSkipAttribute)
+            .ToImmutableList();
+    }
+
+    private static bool HasMementoSkipAttribute(ISymbol symbol)
+    {
+        var attributes = symbol.GetAttributes();
+        if (attributes.IsEmpty) return true;
+        return !attributes.Any(attribute =>
+            attribute.AttributeClass?.ToDisplayString() == MementoSkipAttributeHelper.AttributeFullName);
     }
 
     private static (ClassBuilder root, ClassBuilder) GetClassBuilder(INamedTypeSymbol typeSymbol, Compilation compilation)
@@ -203,31 +208,5 @@ public class OriginatorGenerator : IIncrementalGenerator
             var root = CodeBuilder.Create(typeSymbol);
             return (root, root);
         }
-    }
-
-    private static string HandlePropertyOrField(ClassBuilder nestedBuilder,
-        string typeDisplayString, string fieldOrPropertyName,
-        ConstructorBuilder nestedConstructorBuilder, ICollection<Action<ICodeWriter>> nestedConstructorActions,
-        ICollection<Action<ICodeWriter>> parentRestoreMethodActions,
-        string parentCreateMementoConstructorArguments)
-    {
-        nestedBuilder
-            .AddProperty(fieldOrPropertyName, Accessibility.Public)
-            .SetType(typeDisplayString)
-            .UseGetOnlyAutoProp();
-        nestedConstructorBuilder
-            .AddParameter(typeDisplayString, fieldOrPropertyName);
-        nestedConstructorActions.Add(w => w.AppendLine($"this.{fieldOrPropertyName} = {fieldOrPropertyName};"));
-        parentRestoreMethodActions.Add(w => w.AppendLine($"this.{fieldOrPropertyName} = concreteMemento.{fieldOrPropertyName};"));
-        if (parentCreateMementoConstructorArguments == "")
-        {
-            parentCreateMementoConstructorArguments += $"{fieldOrPropertyName}";
-        }
-        else
-        {
-            parentCreateMementoConstructorArguments += $", {fieldOrPropertyName}";
-        }
-
-        return parentCreateMementoConstructorArguments;
     }
 }
