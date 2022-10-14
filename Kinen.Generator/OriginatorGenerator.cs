@@ -181,11 +181,11 @@ public class OriginatorGenerator : IIncrementalGenerator
         return typeSymbol.GetMembers()
             .Where(symbol => !symbol.IsImplicitlyDeclared)
             .Where(symbol => symbol is IPropertySymbol or IFieldSymbol)
-            .Where(HasMementoSkipAttribute)
+            .Where(HasNoMementoSkipAttribute)
             .ToImmutableList();
     }
 
-    private static bool HasMementoSkipAttribute(ISymbol symbol)
+    private static bool HasNoMementoSkipAttribute(ISymbol symbol)
     {
         var attributes = symbol.GetAttributes();
         if (attributes.IsEmpty) return true;
