@@ -80,31 +80,25 @@ public class OriginatorGenerator : IIncrementalGenerator
         }
     }
 
-    private static bool IsTargetForGeneration(SyntaxNode node, CancellationToken _)
-    {
-        var retval = node is ClassDeclarationSyntax { AttributeLists.Count: > 0 };
-        return retval;
-    }
+    private static bool IsTargetForGeneration(SyntaxNode node, CancellationToken _) =>
+        node is ClassDeclarationSyntax { AttributeLists.Count: > 0 };
 
     private static ClassDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context, CancellationToken cancellationToken)
     {
         var classDeclarationSyntax = (ClassDeclarationSyntax)context.Node;
 
-        foreach (var attributeListSyntax in classDeclarationSyntax.AttributeLists)
-        {
-            foreach (var attributeSyntax in attributeListSyntax.Attributes)
-            {
-                if (cancellationToken.IsCancellationRequested) return null;
-                var attributeSymbol = ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax, cancellationToken);
-                var attributeContainingTypeSymbol = attributeSymbol.Symbol?.ContainingType;
-                var fullName = attributeContainingTypeSymbol?.ToDisplayString();
-                if (fullName != MementoAttributeHelper.AttributeFullName) continue; 
-                return classDeclarationSyntax;
-            }
-        }
-
-        return null;
+        return HasMementoAttribute(context, cancellationToken, classDeclarationSyntax) ? classDeclarationSyntax : null;
     }
+
+    private static bool HasMementoAttribute(GeneratorSyntaxContext context, CancellationToken cancellationToken,
+        MemberDeclarationSyntax classDeclarationSyntax) =>
+        classDeclarationSyntax.AttributeLists
+            .SelectMany(attributeListSyntax => attributeListSyntax.Attributes)
+            .Select(attributeSyntax =>
+                ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax, cancellationToken))
+            .Select(attributeSymbol => attributeSymbol.Symbol?.ContainingType?.ToDisplayString())
+            .Any(fullName => fullName == MementoAttributeHelper.AttributeFullName);
+
 
     private static void BuildIOriginatorImplementation(Compilation compilation, SourceProductionContext context,
         ClassDeclarationSyntax classDeclaration)
