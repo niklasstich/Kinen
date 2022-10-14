@@ -230,32 +230,4 @@ public class OriginatorGenerator : IIncrementalGenerator
 
         return parentCreateMementoConstructorArguments;
     }
-
-
-    private static string GetContainingNamespace(BaseTypeDeclarationSyntax syntax)
-    {
-        //iterate through parents until we run find namespace syntax element
-        var potentialNamespaceParent = syntax.Parent;
-        while (potentialNamespaceParent != null
-               && potentialNamespaceParent is not NamespaceDeclarationSyntax
-               && potentialNamespaceParent is not FileScopedNamespaceDeclarationSyntax)
-        {
-            potentialNamespaceParent = potentialNamespaceParent.Parent;
-        }
-
-        if (potentialNamespaceParent is not BaseNamespaceDeclarationSyntax namespaceParent) return string.Empty;
-            
-        var nameSpace = namespaceParent.Name.ToString();
-
-        //handle nested namespaces
-        while (true)
-        {
-            if (namespaceParent.Parent is not NamespaceDeclarationSyntax parent)
-                break;
-            nameSpace = $"{namespaceParent.Name}.{nameSpace}";
-            namespaceParent = parent;
-        }
-
-        return nameSpace;
-    }
 }
